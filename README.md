@@ -1,5 +1,7 @@
 # ComplianShift CLI
 
+![ComplianShift Screenshot](doc/img/screenshot.png)
+
 **ComplianShift** is a command-line interface (CLI) tool developed in Python to perform compliance diagnostics of Operators installed on an OpenShift cluster.
 
 The tool validates whether the versions and channels of Red Hat operators (installed via OLM - Operator Lifecycle Manager) are within the official Red Hat support window, classifying them into:

@@ -76,7 +76,6 @@ def scan(
             
         console.print("[green]✓ Lifecycle data ready.[/green]\n")
         
-                # scan_operators already prints progress for each operator
         results = scanner.scan_operators(cache_minutes=cache_minutes, force=force, console=console, debug=debug)
         
         console.print("\n[bold green]Scan complete. Generating consolidated table...[/bold green]\n")

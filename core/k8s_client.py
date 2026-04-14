@@ -1,5 +1,6 @@
 from kubernetes import client, config
 
+
 class K8sClient:
     def __init__(self):
         try:
@@ -21,113 +22,104 @@ class K8sClient:
             for entry in history:
                 if entry.get("state") == "Completed":
                     return entry.get("version")
-            return "Desconhecida"
-        except Exception as e:
-            # In case of error (e.g. not an OpenShift cluster, no permission), return None or log the error
+            return "Unknown"
+        except Exception:
             return None
 
-    def _extract_package_name(self, metadata, name, namespace):
-        """Tries to extract package name from labels or fallbacks to name."""
-        labels = metadata.get("labels", {})
-        for label in labels.keys():
-            if label.startswith("operators.coreos.com/"):
-                label_value = label.split("/")[1]
-                if label_value.endswith(f".{namespace}"):
-                    return label_value[:-(len(namespace)+1)]
-        return name.split(".v")[0] if ".v" in name else name
+    def _extract_operator_version(self, installed_csv, package):
+        """Extracts the operator version from the installedCSV field.
+        E.g. '3scale-operator.v0.13.2' -> '0.13.2'"""
+        if not installed_csv:
+            return "N/A"
+        if ".v" in installed_csv:
+            return installed_csv.split(".v", 1)[1]
+        prefix = f"{package}."
+        if installed_csv.startswith(prefix):
+            return installed_csv[len(prefix):]
+        return installed_csv
 
-    def _parse_csv_item(self, csv):
-        """Filters and converts a raw CSV item into a simplified dictionary."""
-        spec = csv.get("spec", {})
-        provider = spec.get("provider", {})
-        provider_name = provider.get("name", "") if isinstance(provider, dict) else provider
-        
-        if provider_name != "Red Hat":
+    def _parse_subscription_item(self, sub):
+        """Filters and converts a raw Subscription into a simplified dictionary."""
+        spec = sub.get("spec", {})
+        source = spec.get("source", "")
+
+        if source != "redhat-operators":
             return None
-            
-        metadata = csv.get("metadata", {})
+
+        metadata = sub.get("metadata", {})
+        status = sub.get("status", {})
         namespace = metadata.get("namespace", "")
-        name = metadata.get("name", "")
-        
-        package = self._extract_package_name(metadata, name, namespace)
+        package = spec.get("name", metadata.get("name", ""))
+        channel = spec.get("channel", "N/A")
+        installed_csv = status.get("installedCSV") or status.get("currentCSV") or ""
+        operator_version = self._extract_operator_version(installed_csv, package)
         scope = "Cluster" if namespace == "openshift-operators" else "Namespace"
-        
+
         return {
-            "name": name,
-            "display_name": spec.get("displayName", package),
             "package": package,
             "namespace": namespace,
-            "version": spec.get("version", "N/A"),
-            "scope": scope
+            "channel": channel,
+            "installed_csv": installed_csv,
+            "operator_version": operator_version,
+            "source": source,
+            "scope": scope,
         }
 
-    def get_redhat_csvs(self, console=None, debug=False):
-        """Fetches ClusterServiceVersions (CSVs) in the cluster and filters by provider 'Red Hat'.
-        Uses pagination to avoid timeouts on large clusters."""
+    def get_redhat_subscriptions(self, console=None, debug=False):
+        """Fetches Subscriptions across all namespaces and filters by source 'redhat-operators'.
+        Uses pagination to handle large clusters."""
         try:
             if console and debug:
-                console.print("[dim]Starting Kubernetes API call to list clusterserviceversions (with pagination)...[/dim]")
-                
-            rh_csvs = []
+                console.print("[dim]Starting Kubernetes API call to list subscriptions (with pagination)...[/dim]")
+
+            rh_subs = []
             limit = 200
             continue_token = None
             page_count = 1
-            total_items_processed = 0
+            total_items = 0
 
             while True:
                 if console and debug:
                     console.print(f"[dim]  -> Fetching page {page_count}...[/dim]")
-                
+
                 kwargs = {
                     "group": "operators.coreos.com",
                     "version": "v1alpha1",
-                    "plural": "clusterserviceversions",
+                    "plural": "subscriptions",
                     "limit": limit,
-                    "_request_timeout": 60
+                    "_request_timeout": 60,
                 }
                 if continue_token:
                     kwargs["_continue"] = continue_token
 
-                csvs_obj = self.api.list_cluster_custom_object(**kwargs)
-                items = csvs_obj.get("items", [])
-                total_items_processed += len(items)
-                
+                subs_obj = self.api.list_cluster_custom_object(**kwargs)
+                items = subs_obj.get("items", [])
+                total_items += len(items)
+
                 if console and debug:
                     console.print(f"[dim]  -> Page {page_count} returned {len(items)} items. Filtering...[/dim]")
-                    
-                for csv in items:
-                    parsed_csv = self._parse_csv_item(csv)
-                    if parsed_csv:
+
+                for sub in items:
+                    parsed = self._parse_subscription_item(sub)
+                    if parsed:
                         if console and debug:
-                            console.print(f"[dim]    - Found Red Hat CSV: {parsed_csv['name']} in namespace {parsed_csv['namespace']}[/dim]")
-                        rh_csvs.append(parsed_csv)
-                
-                continue_token = csvs_obj.get("metadata", {}).get("continue")
+                            console.print(
+                                f"[dim]    - Found: {parsed['package']} "
+                                f"(channel={parsed['channel']}) in {parsed['namespace']}[/dim]"
+                            )
+                        rh_subs.append(parsed)
+
+                continue_token = subs_obj.get("metadata", {}).get("continue")
                 if not continue_token:
                     break
                 page_count += 1
-                    
+
             if console and debug:
-                console.print(f"[dim]Pagination complete. Total of {total_items_processed} CSVs processed. Kept {len(rh_csvs)} Red Hat CSVs.[/dim]")
-                
-            return rh_csvs
+                console.print(
+                    f"[dim]Pagination complete. {total_items} subscriptions processed. "
+                    f"Kept {len(rh_subs)} Red Hat subscriptions.[/dim]"
+                )
+
+            return rh_subs
         except Exception as e:
-            raise RuntimeError(f"Error fetching ClusterServiceVersions: {e}")
-            
-    def get_ocp_version(self):
-        """Fetches the current OpenShift version in the cluster."""
-        try:
-            cluster_version = self.api.get_cluster_custom_object(
-                group="config.openshift.io",
-                version="v1",
-                plural="clusterversions",
-                name="version"
-            )
-            history = cluster_version.get("status", {}).get("history", [])
-            for entry in history:
-                if entry.get("state") == "Completed":
-                    return entry.get("version")
-            return "Unknown"
-        except Exception as e:
-            # In case of error (e.g. not an OpenShift cluster, no permission), return None or log the error
-            return None
+            raise RuntimeError(f"Error fetching Subscriptions: {e}")

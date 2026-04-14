@@ -1,4 +1,4 @@
-# Mapeamento de nomes técnicos de operadores para os nomes da API de Ciclo de Vida da Red Hat
+# Mapping: operator package names -> Red Hat Product Lifecycle API names
 amq-streams: "Streams for Apache Kafka"
 rhods-operator: "Red Hat OpenShift Data Science"
 serverless-operator: "Red Hat OpenShift Serverless"
@@ -30,4 +30,12 @@ opentelemetry-product: "Red Hat OpenShift Observability"
 loki-operator: "Loki Operator"
 tempo-product: "Red Hat OpenShift Observability"
 cert-manager-operator: "Cert Manager"
-3scale-operator: "Red Hat 3scale API Management"
+
+# Channel-to-product-version overrides.
+# Use this section only for operators whose channel name does NOT contain
+# a recognizable product version (most operators don't need an entry here).
+# Format:
+#   version_override:
+#     <package-name>:
+#       "<channel-name>": "<product-version>"
+version_override: {}

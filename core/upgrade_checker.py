@@ -1,10 +1,12 @@
 import json
-import glob
 from pathlib import Path
 
+from core.paths import get_base_path
+
+
 class UpgradeChecker:
-    def __init__(self, data_dir="data"):
-        self.data_dir = Path(data_dir)
+    def __init__(self, data_dir=None):
+        self.data_dir = Path(data_dir) if data_dir else get_base_path() / "data"
         self.operator_data = self._load_data()
 
     def _load_data(self):

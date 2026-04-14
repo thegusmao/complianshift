@@ -162,6 +162,11 @@ cython_debug/
 # MacOS
 .DS_Store
 
+# PyInstaller
+build/
+dist/
+*.spec
+
 # ComplianShift Cache Files
 data/csvs-report.json
 data/subscriptions-report.json

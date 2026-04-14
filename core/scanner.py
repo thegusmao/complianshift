@@ -4,17 +4,22 @@ import time
 import requests
 from pathlib import Path
 
+from core.paths import get_base_path
+
 
 class Scanner:
-    def __init__(self, k8s_client, mapping_file="mapping.yaml", data_dir="data"):
+    def __init__(self, k8s_client, mapping_file=None, data_dir=None):
         self.k8s = k8s_client
-        self.data_dir = Path(data_dir)
+        base = get_base_path()
+        self.data_dir = Path(data_dir) if data_dir else base / "data"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.json_path = self.data_dir / "product-lifecycle.json"
 
+        mapping_path = Path(mapping_file) if mapping_file else base / "mapping.yaml"
+
         import yaml
         try:
-            with open(mapping_file, "r") as f:
+            with open(mapping_path, "r") as f:
                 raw = yaml.safe_load(f) or {}
         except FileNotFoundError:
             raw = {}

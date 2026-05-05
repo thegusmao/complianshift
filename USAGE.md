@@ -27,34 +27,22 @@ oc login --token=YOUR_TOKEN --server=CLUSTER_URL
 
 ## 3. Execution
 
-The CLI was built using the `Typer` library and has multiple commands. If you run just `python main.py`, the `scan` command will be executed by default.
-
-### Supportability Scan (Default)
-Downloads consolidated v2 API data and checks compatibility of operators (CSVs) with the current OpenShift version, along with the support end date:
+The CLI was built using the `Typer` library. Running `python main.py` will execute the supportability scan:
 
 ```bash
-python main.py scan
-# or simply:
 python main.py
 ```
 
 You can run with additional flags to control the cache and detail level:
 ```bash
 # Force ignoring the cache and download everything again
-python main.py scan --force
+python main.py --force
 
 # Change cache validity time (default is 30 min)
-python main.py scan --cache-minutes 60
+python main.py --cache-minutes 60
 
 # Display detailed logs of what is happening under the hood
-python main.py scan --debug
-```
-
-### OpenShift Upgrade Planning
-To check if current operators support upcoming OpenShift versions and if they need a channel change:
-
-```bash
-python main.py check-upgrade
+python main.py --debug
 ```
 
 You can also view the built-in help by running:

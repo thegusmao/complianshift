@@ -13,9 +13,8 @@ A ferramenta valida se as versões e canais dos operadores Red Hat (instalados v
 
 1. **Discovery de Cluster**: Conecta-se automaticamente ao seu cluster OpenShift atual (via `~/.kube/config`) e coleta os *ClusterServiceVersions* (CSVs) da fonte `Red Hat`.
 2. **Integração com API Red Hat (v2)**: Consulta a API oficial de Ciclo de Vida de Produtos da Red Hat para obter as datas exatas de suporte de cada versão e a compatibilidade com a versão atual do seu cluster OpenShift.
-3. **Planejamento de Upgrade**: Verifica se os operadores instalados suportam as próximas versões do OpenShift, ajudando a planejar atualizações de cluster sem quebrar compatibilidade.
-4. **Sistema de Cache**: Implementa um cache local (`data/product-lifecycle.json` e `data/csvs-report.json`) para evitar chamadas excessivas à API da Red Hat e acelerar a execução, com tempo de expiração configurável.
-5. **Interface Rica e CLI Moderna**: Construída com as bibliotecas `Typer` e `Rich`, apresenta o progresso em tempo real da consulta de cada operador e consolida os resultados em uma tabela colorida no terminal, destacando visualmente os operadores que precisam de atenção.
+3. **Sistema de Cache**: Implementa um cache local (`data/product-lifecycle.json` e `data/csvs-report.json`) para evitar chamadas excessivas à API da Red Hat e acelerar a execução, com tempo de expiração configurável.
+4. **Interface Rica e CLI Moderna**: Construída com as bibliotecas `Typer` e `Rich`, apresenta o progresso em tempo real da consulta de cada operador e consolida os resultados em uma tabela colorida no terminal, destacando visualmente os operadores que precisam de atenção.
 
 ## Estrutura do Projeto
 
@@ -24,12 +23,11 @@ O projeto adota uma arquitetura modular para facilitar a manutenção e expansã
 ```text
 op-check/
 ├── main.py              # Ponto de entrada da CLI (Typer)
-├── mapping.yaml         # Dicionário: Nome Operador -> Nome API Red Hat (Apenas para check-upgrade)
+├── mapping.yaml         # Dicionário: Nome do pacote do operador -> Nome do produto na API Red Hat
 ├── requirements.txt     # Dependências do projeto
-├── data/                # Dados em JSON do ciclo de vida dos operadores por versão do OCP e cache
+├── data/                # Pasta de cache para respostas da API
 ├── core/
 │   ├── k8s_client.py    # Lógica de interação com Kubernetes/OpenShift
-│   ├── upgrade_checker.py # Lógica de verificação de compatibilidade para upgrades do OCP
 │   └── scanner.py       # Lógica do Scan de suportabilidade consumindo a API v2
 └── ui/
     └── formatter.py     # Lógica de formatação visual (Tabelas e Painéis via Rich)

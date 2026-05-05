@@ -44,9 +44,6 @@ jobs:
           pyinstaller --onefile \
             --name "${{ matrix.artifact }}" \
             --add-data "mapping.yaml${SEP}." \
-            --add-data "data/product_lifecycle_data_ocp_418.json${SEP}data/" \
-            --add-data "data/product_lifecycle_data_ocp_420.json${SEP}data/" \
-            --add-data "data/product_lifecycle_data_ocp_421.json${SEP}data/" \
             main.py
 
       - name: Upload artifact

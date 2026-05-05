@@ -19,30 +19,6 @@ class UI:
 """
         self.console.print(banner)
 
-    def display_upgrade_results(self, current_version, results):
-        self.console.print(f"\n[bold blue]Current OpenShift Version:[/bold blue] {current_version}\n")
-
-        if not results:
-            self.console.print("[yellow]Could not determine upgrades (unknown version or no future data).[/yellow]")
-            return
-
-        for target_version, operators in results.items():
-            if not operators:
-                self.console.print(f"[bold green]✓ To upgrade to OCP {target_version}:[/bold green] No operator needs a channel change.")
-                continue
-
-            table = Table(title=f"Operators requiring upgrade for OCP {target_version}", show_header=True, header_style="bold magenta")
-            table.add_column("OPERATOR", style="cyan")
-            table.add_column("CURRENT CHANNEL", style="red")
-            table.add_column("SUPPORTED CHANNELS (TARGET)", style="green")
-
-            for op in operators:
-                recommended = ", ".join(op["recommended_channels"])
-                table.add_row(op["operator"], op["current_channel"], recommended)
-
-            self.console.print(table)
-            self.console.print()
-
     def _format_compatibility(self, compat):
         if compat in ("Sim", "Yes"):
             return "[green]Yes[/green]"

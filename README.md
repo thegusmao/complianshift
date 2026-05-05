@@ -13,9 +13,8 @@ The tool validates whether the versions and channels of Red Hat operators (insta
 
 1. **Cluster Discovery**: Automatically connects to your current OpenShift cluster (via `~/.kube/config`) and collects *ClusterServiceVersions* (CSVs) from the `Red Hat` provider.
 2. **Red Hat API (v2) Integration**: Queries the official Red Hat Product Lifecycle API to get exact support dates for each version and checks compatibility with your current OpenShift cluster version.
-3. **Upgrade Planning**: Verifies if installed operators support upcoming OpenShift versions, helping you plan cluster upgrades without breaking compatibility.
-4. **Caching System**: Implements local caching (`data/product-lifecycle.json` and `data/csvs-report.json`) to avoid excessive Red Hat API calls and speed up execution, with configurable expiration time.
-5. **Rich Interface and Modern CLI**: Built with `Typer` and `Rich` libraries, it displays real-time progress for each operator and consolidates results into a colorful terminal table, visually highlighting operators that require attention.
+3. **Caching System**: Implements local caching (`data/product-lifecycle.json` and `data/csvs-report.json`) to avoid excessive Red Hat API calls and speed up execution, with configurable expiration time.
+4. **Rich Interface and Modern CLI**: Built with `Typer` and `Rich` libraries, it displays real-time progress for each operator and consolidates results into a colorful terminal table, visually highlighting operators that require attention.
 
 ## Project Structure
 
@@ -24,12 +23,11 @@ The project adopts a modular architecture for easy maintenance and expansion:
 ```text
 op-check/
 ├── main.py              # CLI Entry point (Typer)
-├── mapping.yaml         # Dictionary: Operator Name -> Red Hat API Name (Only for check-upgrade)
+├── mapping.yaml         # Dictionary: Operator package name -> Red Hat API product name
 ├── requirements.txt     # Project dependencies
-├── data/                # JSON data for operator lifecycles per OCP version and cache
+├── data/                # Cache folder for API responses
 ├── core/
 │   ├── k8s_client.py    # Kubernetes/OpenShift interaction logic
-│   ├── upgrade_checker.py # Compatibility verification logic for OCP upgrades
 │   └── scanner.py       # Supportability scan logic consuming API v2
 └── ui/
     └── formatter.py     # Visual formatting logic (Tables and Panels via Rich)

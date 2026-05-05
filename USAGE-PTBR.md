@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 A API da Red Hat utiliza nomes comerciais (ex: "Red Hat OpenShift Data Foundation"), enquanto o OpenShift utiliza nomes técnicos nos pacotes (ex: `ocs-operator`, `mcg-operator`). 
 
-O arquivo `mapping.yaml` na raiz do projeto é responsável por essa tradução. O projeto já vem com dezenas de operadores mapeados, mas você pode adicionar novos conforme a necessidade do seu cluster:
+O arquivo `mapping.yaml` na raiz do projeto é responsável por essa tradução durante o scan. O projeto já vem com dezenas de operadores mapeados, mas você pode adicionar novos conforme a necessidade do seu cluster:
 
 ```yaml
 # Exemplo de conteúdo do mapping.yaml
@@ -43,34 +43,22 @@ oc login --token=SEU_TOKEN --server=URL_DO_CLUSTER
 
 ## 4. Execução
 
-A CLI foi construída utilizando a biblioteca `Typer` e possui múltiplos comandos. Se você rodar apenas `python main.py`, o comando `scan` será executado por padrão.
-
-### Scan de Suportabilidade (Padrão)
-Baixa os dados consolidados da API v2 e verifica a compatibilidade dos operadores (CSVs) com a versão atual do OpenShift, além da data limite de suporte:
+A CLI foi construída utilizando a biblioteca `Typer`. Executar `python main.py` realizará o scan de suportabilidade:
 
 ```bash
-python main.py scan
-# ou simplesmente:
 python main.py
 ```
 
 Você pode rodar com flags adicionais para controlar o cache e o nível de detalhes:
 ```bash
 # Força a ignorar o cache e baixar tudo de novo
-python main.py scan --force
+python main.py --force
 
 # Altera o tempo de validade do cache (padrão é 30 min)
-python main.py scan --cache-minutes 60
+python main.py --cache-minutes 60
 
 # Exibe logs detalhados do que está acontecendo por baixo dos panos
-python main.py scan --debug
-```
-
-### Planejamento de Upgrade do OpenShift
-Para verificar se os operadores atuais suportam as próximas versões do OpenShift e se precisam de mudança de canal:
-
-```bash
-python main.py check-upgrade
+python main.py --debug
 ```
 
 Você também pode visualizar a ajuda integrada da ferramenta executando:

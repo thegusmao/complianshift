@@ -4,7 +4,11 @@ Este guia explica como instalar, configurar e executar o **ComplianShift CLI** n
 
 ## 1. Instalação
 
-Primeiro, certifique-se de ter o Python 3.10+ instalado. Em seguida, instale as dependências listadas no arquivo `requirements.txt`:
+O ComplianShift pode ser executado de duas formas: diretamente a partir do código-fonte (requer Python) ou como um binário compilado e autossuficiente (sem necessidade de Python). Escolha a opção que melhor se adapta ao seu ambiente.
+
+### Opção A — Executar a partir do código-fonte (requer Python)
+
+Certifique-se de ter o Python 3.10+ instalado. Em seguida, instale as dependências listadas no arquivo `requirements.txt`:
 
 ```bash
 # Opcional: Crie um ambiente virtual
@@ -14,6 +18,18 @@ source venv/bin/activate  # Linux/macOS
 
 # Instale as dependências
 pip install -r requirements.txt
+```
+
+### Opção B — Executar o binário compilado (sem Python)
+
+Baixe ou compile o binário `complianshift` (veja [DEVELOPMENT.md](DEVELOPMENT.md)) e, opcionalmente, instale-o no sistema:
+
+```bash
+# Torne o binário executável (se necessário)
+chmod +x ./complianshift
+
+# Opcional: instale no PATH para poder chamá-lo de qualquer lugar
+sudo cp ./complianshift /usr/local/bin/complianshift
 ```
 
 ## 2. Configuração do Mapeamento (`mapping.yaml`)
@@ -43,27 +59,52 @@ oc login --token=SEU_TOKEN --server=URL_DO_CLUSTER
 
 ## 4. Execução
 
-A CLI foi construída utilizando a biblioteca `Typer`. Executar `python main.py` realizará o scan de suportabilidade:
+A CLI foi construída utilizando a biblioteca `Typer`. Os comandos são idênticos tanto ao executar a partir do código-fonte quanto ao usar o binário compilado — basta substituir `python main.py` por `complianshift` (ou `./complianshift` caso o binário não esteja no seu `PATH`).
+
+### Executando a partir do código-fonte
 
 ```bash
 python main.py
 ```
 
+### Executando o binário compilado
+
+```bash
+# Se o binário estiver no PATH
+complianshift
+
+# Se estiver executando a partir do diretório dist/
+./complianshift
+```
+
+### Flags disponíveis
+
 Você pode rodar com flags adicionais para controlar o cache e o nível de detalhes:
+
 ```bash
 # Força a ignorar o cache e baixar tudo de novo
-python main.py --force
+complianshift --force
 
 # Altera o tempo de validade do cache (padrão é 30 min)
-python main.py --cache-minutes 60
+complianshift --cache-minutes 60
 
 # Exibe logs detalhados do que está acontecendo por baixo dos panos
-python main.py --debug
+complianshift --debug
+
+# Exporta a tabela de compliance em HTML
+complianshift -o html
+
+# Exporta em Markdown para um diretório específico
+complianshift -o md -p ./reports
+
+# Combina com outras flags
+complianshift --force -o html -p /tmp/reports
 ```
 
 Você também pode visualizar a ajuda integrada da ferramenta executando:
+
 ```bash
-python main.py --help
+complianshift --help
 ```
 
 ### O que esperar da execução:
@@ -71,6 +112,7 @@ python main.py --help
 2. A ferramenta exibirá o progresso individual de cada operador.
 3. Ao final, uma tabela consolidada será exibida.
 4. Se houver operadores fora da janela de suporte (EOL), um painel de alerta vermelho será exibido ao final, recomendando o upgrade.
+5. Se `--output` for especificado, um arquivo de relatório (`compliance-report-YYYY-MM-DD.html` ou `.md`) será gerado no diretório indicado por `--path` (padrão: diretório atual).
 
 ## 5. Gerenciamento de Cache
 

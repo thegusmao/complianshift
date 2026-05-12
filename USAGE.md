@@ -4,7 +4,11 @@ This guide explains how to install, configure, and run the **ComplianShift CLI**
 
 ## 1. Installation
 
-First, ensure you have Python 3.10+ installed. Then, install the dependencies listed in the `requirements.txt` file:
+ComplianShift can be run in two ways: directly from source (requires Python) or as a pre-built standalone binary (no Python required). Choose the method that fits your environment.
+
+### Option A — Run from Source (Python required)
+
+Ensure you have Python 3.10+ installed. Then install the dependencies listed in `requirements.txt`:
 
 ```bash
 # Optional: Create a virtual environment
@@ -14,6 +18,18 @@ source venv/bin/activate  # Linux/macOS
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+### Option B — Run the Pre-built Binary (no Python required)
+
+Download or build the `complianshift` binary (see [DEVELOPMENT.md](DEVELOPMENT.md)) and optionally install it system-wide:
+
+```bash
+# Make the binary executable (if not already)
+chmod +x ./complianshift
+
+# Optional: install it to PATH so you can call it from anywhere
+sudo cp ./complianshift /usr/local/bin/complianshift
 ```
 
 ## 2. Authentication on the Cluster
@@ -27,27 +43,52 @@ oc login --token=YOUR_TOKEN --server=CLUSTER_URL
 
 ## 3. Execution
 
-The CLI was built using the `Typer` library. Running `python main.py` will execute the supportability scan:
+The CLI was built using the `Typer` library. The commands are identical whether you are running from source or using the compiled binary — just replace `python main.py` with `complianshift` (or `./complianshift` if the binary is not on your `PATH`).
+
+### Running from Source
 
 ```bash
 python main.py
 ```
 
+### Running the Compiled Binary
+
+```bash
+# If the binary is on your PATH
+complianshift
+
+# If running from the dist/ directory
+./complianshift
+```
+
+### Available Flags
+
 You can run with additional flags to control the cache and detail level:
+
 ```bash
 # Force ignoring the cache and download everything again
-python main.py --force
+complianshift --force
 
 # Change cache validity time (default is 30 min)
-python main.py --cache-minutes 60
+complianshift --cache-minutes 60
 
 # Display detailed logs of what is happening under the hood
-python main.py --debug
+complianshift --debug
+
+# Export the compliance table to HTML
+complianshift -o html
+
+# Export to Markdown in a specific directory
+complianshift -o md -p ./reports
+
+# Combine with other flags
+complianshift --force -o html -p /tmp/reports
 ```
 
 You can also view the built-in help by running:
+
 ```bash
-python main.py --help
+complianshift --help
 ```
 
 ### What to expect from the execution:
@@ -55,6 +96,7 @@ python main.py --help
 2. The tool will display the individual progress of each operator.
 3. At the end, a consolidated table will be displayed.
 4. If there are operators out of the support window (EOL), a red alert panel will be displayed at the end, recommending an upgrade.
+5. If `--output` is specified, a report file (`compliance-report-YYYY-MM-DD.html` or `.md`) will be generated in the directory specified by `--path` (defaults to the current directory).
 
 ## 4. Cache Management
 
